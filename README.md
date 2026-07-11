@@ -15,7 +15,7 @@
 
 #### 1. 기본 방식: 한 세션 안에서 작업
 
-사용자가 `/sub`를 명시하지 않고, 별도로 서브에이전트를 명시적으로 요청하지도 않으면 작업은 현재 Codex 대화 세션 안에서 진행됩니다.
+기본은 현재 Codex 대화 세션 안에서 작업합니다. 다만 사용자가 `/sub`나 서브에이전트를 요청했거나, 활성 runtime이 능동적 위임을 허용하고 분리된 병렬 작업이 속도나 품질을 실질적으로 높이면 내부 서브에이전트 방식을 선택합니다.
 
 기본 흐름은 아래와 같습니다.
 
@@ -42,7 +42,7 @@
 
 #### 2. `/sub` 방식: 내부 서브에이전트 사용
 
-작업을 나눠 처리하는 편이 더 낫다고 판단되면 `/sub`를 사용해 내부 서브에이전트를 붙입니다.
+`/sub`를 명시했거나, 서브에이전트를 요청했거나, 활성 runtime 정책에서 허용하는 능동적 위임이 독립된 작업을 병렬화해 실질적인 이점을 낼 때 내부 서브에이전트를 붙입니다.
 
 실행 전에 부모 세션은 아래를 먼저 정합니다.
 
@@ -60,6 +60,21 @@
 비코딩 `/sub` 작업은 코딩용 승인 게이트를 쓰지 않으며, 기본적으로 approval pause를 건너뜁니다.
 
 나중에 들어온 작은 후속 코딩 단계가 이미 활성 승인 계획에 명시적으로 포함되어 있고 승인된 방향을 materially 바꾸지 않는다면, `/sub`도 새 승인 게이트를 다시 열지 않고 기존 계획 기록을 갱신하면서 계속 진행합니다.
+
+#### 현재 collaboration runtime 계약
+
+- 사용 가능한 도구는 `spawn_agent`, `send_message`, `followup_task`, `wait_agent`, `interrupt_agent`, `list_agents`입니다.
+- collaboration 도구는 parent가 직접 호출하며 `functions.exec` 안의 `tools` 객체에서는 호출할 수 없습니다.
+- `fork_turns`는 대화 문맥만 복사합니다. 모든 agent는 같은 cwd와 filesystem을 공유하므로, 동시 writer는 서로 다른 파일을 맡거나 parent가 먼저 별도 Git worktree를 준비해야 합니다.
+- `spawn_agent`에 worker별 model/reasoning 인자는 없고, 현재 runtime에는 `close_agent`도 없습니다. 동시성은 `list_agents`와 활성 runtime 스케줄링 결과로 확인합니다.
+
+정확한 의미와 호출 규칙은 `skills/codex-subagent-orchestrator/references/collaboration-runtime-contract.md`를 따릅니다.
+
+계약 문서의 callable 도구, shared filesystem, template 필드가 다시 틀어지지 않았는지 확인하려면 다음을 실행합니다.
+
+```bash
+python3 -m unittest discover -s tests -p 'test_*.py' -v
+```
 
 ### Agent Skills 통합
 
@@ -144,6 +159,7 @@
 `/sub` 경로:
 
 - `skills/codex-subagent-orchestrator/SKILL.md`
+- `skills/codex-subagent-orchestrator/references/collaboration-runtime-contract.md`
 - `skills/codex-subagent-orchestrator/references/orchestration-workflow.md`
 - `skills/codex-subagent-orchestrator/references/sub-command-protocol.md`
 - `skills/codex-subagent-orchestrator/references/testing-playbook.md`
@@ -156,7 +172,7 @@ Agent Skills 연결 규칙:
 ### 핵심 원칙
 
 - 기본은 한 세션 작업
-- `/sub` 또는 다른 명시적 서브에이전트 요청은 위임이 정당할 때만 사용
+- `/sub`, 명시적 서브에이전트 요청, 또는 runtime이 허용한 능동적 위임은 분할이 속도나 품질을 실질적으로 높일 때만 사용
 - 코딩 작업은 구현 전에 plan-first 흐름을 먼저 따른다
 - 코딩 작업에는 `skills/karpathy-guidelines/SKILL.md`를 기본 local anti-overengineering overlay로 적용한다
 - 승인된 활성 계획은 `plan/` 아래에 두고 작업이 진행될수록 계속 갱신한다
@@ -186,7 +202,7 @@ There are two working modes.
 
 #### 1. Default mode: one session
 
-If the user does not explicitly ask for `/sub` or otherwise explicitly request subagents, work stays inside the current Codex session.
+Work stays inside the current Codex session by default. Use internal subagents when the user requests `/sub` or subagents, or when the active runtime permits proactive delegation and bounded parallel work materially improves speed or quality.
 
 The usual flow is:
 
@@ -213,7 +229,7 @@ If a problem is found, the workflow does not just stop there. It goes back to th
 
 #### 2. `/sub` mode: internal subagents
 
-If the task is better handled by splitting work, `/sub` can be used to supervise internal subagents.
+Use internal subagents when `/sub` is explicit, when the user otherwise requests them, or when runtime policy permits proactive delegation and the work has an independently bounded split that materially helps.
 
 Before launch, the parent session decides:
 
@@ -231,6 +247,21 @@ For coding runs, `/sub` still follows the same plan-first gate before any writab
 For non-coding runs, `/sub` does not use the coding approval gate and skips the approval pause by default.
 
 If a later tiny follow-up coding step is already explicitly covered by the active approved plan and does not materially change the approved direction, `/sub` continues under that same approved plan and refreshes the active plan record instead of reopening a fresh approval gate.
+
+#### Current collaboration runtime contract
+
+- The callable tools are `spawn_agent`, `send_message`, `followup_task`, `wait_agent`, `interrupt_agent`, and `list_agents`.
+- The parent calls collaboration tools directly; they are not callable through the `tools` object inside `functions.exec`.
+- `fork_turns` copies conversation context only. All agents share the same cwd and filesystem, so simultaneous writers need disjoint files or an explicit Git worktree prepared by the parent.
+- `spawn_agent` has no per-worker model or reasoning argument, and this runtime has no `close_agent`. Discover current capacity through `list_agents` and runtime scheduling instead of hardcoding a team limit.
+
+See `skills/codex-subagent-orchestrator/references/collaboration-runtime-contract.md` for the exact meanings and coordination rules.
+
+Run the dependency-free contract regression suite with:
+
+```bash
+python3 -m unittest discover -s tests -p 'test_*.py' -v
+```
 
 ### Agent Skills integration
 
@@ -315,6 +346,7 @@ For the default one-session path:
 For `/sub`:
 
 - `skills/codex-subagent-orchestrator/SKILL.md`
+- `skills/codex-subagent-orchestrator/references/collaboration-runtime-contract.md`
 - `skills/codex-subagent-orchestrator/references/orchestration-workflow.md`
 - `skills/codex-subagent-orchestrator/references/sub-command-protocol.md`
 - `skills/codex-subagent-orchestrator/references/testing-playbook.md`
@@ -327,7 +359,7 @@ For Agent Skills routing:
 ### Core rules
 
 - default to one-session work
-- use `/sub` or another explicit subagent request only when delegation is justified
+- use `/sub`, an explicit subagent request, or runtime-permitted proactive delegation only when the split materially improves speed or quality
 - for coding work, follow the plan-first flow before implementation
 - for coding work, apply `skills/karpathy-guidelines/SKILL.md` as the default local anti-overengineering overlay
 - keep the approved active plan under `plan/` and keep it updated as work moves
@@ -338,5 +370,3 @@ For Agent Skills routing:
 - use bounded repairs when review finds a problem
 - do not load all Agent Skills by habit
 - select only the skills that change behavior, validation, or acceptance for the current task
-
-

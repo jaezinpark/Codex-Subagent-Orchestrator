@@ -1,6 +1,6 @@
 ---
 name: codex-parent-session-orchestrator
-description: Run a structured scan/plan/implement/verify/review workflow inside the current parent Codex session without launching external workers or helper scripts. Use when the user wants a single-session workflow, wants to avoid subagents, or wants lower token overhead with disk-backed checkpoints and compact handoff files.
+description: Run a structured scan/plan/implement/verify/review workflow inside the current parent Codex session without launching external workers or helper scripts. Use when delegation offers no material benefit, when the user wants a single-session workflow or no subagents, or when lower token overhead matters.
 ---
 
 # Codex Parent Session Orchestrator
@@ -106,13 +106,14 @@ Every phase should state:
 
 Use this skill when the user asks for:
 
+- work whose writable surface is tightly coupled enough that delegation adds no material benefit
 - parent-only execution
 - a single Codex session
 - no subagents
 - low-token workflows
 - phase-based delivery with checkpoints
 
-Do not use this skill when the user explicitly asks for `/sub` or for internal worker-team execution. In those cases use the subagent workflow.
+Do not use this skill when the user explicitly asks for `/sub` or internal worker-team execution, or when the active runtime permits proactive delegation and bounded parallel work materially improves speed or quality. In those cases use the subagent workflow.
 
 ## Imported Discipline
 

@@ -4,6 +4,8 @@
 - worker:
 - role:
 - mode: read-only | write
+- target working directory:
+- context fork:
 
 ## Mission
 
@@ -40,7 +42,7 @@
 ## Return Contract
 
 - 
-- if this is a write task, summarize the proposed change so the parent can land it in the primary workspace
+- if this is a write task, name the exact shared path and files changed so the parent can inspect and validate the existing result
 - if this is a planner-like task for coding work, identify the approved plan file path the parent should write or update under `plan/`, plus the plan type, version decision, and any progress fields the parent must refresh
 
 ## Stop Condition

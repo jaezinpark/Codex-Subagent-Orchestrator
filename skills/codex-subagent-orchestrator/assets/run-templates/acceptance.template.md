@@ -2,7 +2,7 @@
 
 - accepted: yes | no
 - deliverables:
-- landed changes in primary workspace:
+- shared worktree changes inspected:
 - checks:
 - review or validation evidence:
 

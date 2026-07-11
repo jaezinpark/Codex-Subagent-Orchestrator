@@ -32,6 +32,7 @@ Record:
 - worker count
 - execution mode: `serial | parallel | mixed`
 - review timing or review policy
+- shared workspace root, explicit Git worktrees, and observed runtime capacity
 - approved plan file path in `plan/` for coding runs; otherwise record `n/a`
 - approved plan type, version, and current status for coding runs; otherwise record `n/a`
 - current score and score source from the active plan for coding runs; otherwise record `n/a`
@@ -39,9 +40,9 @@ Record:
   - worker id
   - role
   - mission
+  - target worktree
   - writable scope
-  - model
-  - reasoning effort
+  - context fork
   - stage
 - acceptance strategy
 - evidence paths
@@ -110,12 +111,12 @@ Keep one worker brief per worker.
 Each result file should summarize:
 
 - what the worker changed or verified
-- whether the work happened in a forked workspace and what the parent still needs to land
+- the exact shared path or explicit Git worktree used
 - what checks the worker ran
 - whether the worker claims success or failure
 - any residual risks or blockers
 
-Do not treat worker completion alone as acceptance. For write tasks, worker completion means a candidate change exists and the parent still has to land the accepted result in the primary workspace.
+Do not treat worker completion alone as acceptance. For write tasks, completion means the shared worktree changed and the parent still has to inspect the diff and rerun the planned validation.
 
 ## `review-verdict.md`
 
@@ -138,7 +139,7 @@ This is the final supervisor verdict.
 Capture:
 
 - deliverables accepted
-- landed changes in the primary workspace
+- shared worktree changes inspected
 - checks that passed
 - review or validation evidence
 - remaining risks

@@ -14,6 +14,8 @@
 - score source: coding runs only; otherwise `n/a`
 - score last updated: coding runs only; otherwise `n/a`
 - score maintenance focus: coding runs only; otherwise `n/a`
+- shared workspace root:
+- isolated Git worktrees, if any:
 - blocked on:
 
 ## Active Agents

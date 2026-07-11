@@ -37,11 +37,15 @@
 - execution mode: serial | parallel | mixed
 - review timing:
 - review policy:
+- runtime contract verified:
+- shared workspace root:
+- isolated Git worktrees, if any:
+- observed runtime capacity:
 - coding runs before approval: treat this section as provisional only
 
 ## Workers
 
-| worker | role | mission | writable scope | model | reasoning | stage |
+| worker | role | mission | target worktree | writable scope | context fork | stage |
 | --- | --- | --- | --- | --- | --- | --- |
 |  |  |  |  |  |  |  |
 - coding runs before approval: treat worker assignments in this table as provisional only

@@ -2,6 +2,8 @@
 
 Treat `/sub` as a request for supervised internal delegation.
 
+Use `collaboration-runtime-contract.md` as the callable and shared-filesystem authority before launch.
+
 If the runtime cannot provide the required internal agent tools, do not invent delegated workers. State that `/sub` delegation is unavailable in this runtime, fall back to a parent-only execution path, and keep the same plan-first and evidence-preservation rules.
 
 ## Parse
@@ -39,7 +41,7 @@ Report this to the user before launch:
 - approval status and reason
 - planned worker count
 - execution mode: serial | parallel | mixed
-- each worker id, role, mission, writable scope, model, reasoning effort, and stage
+- each worker id, role, mission, target worktree, writable scope, context fork, and stage
 - reviewer or validator timing or policy
 - acceptance strategy
 - approved plan file path in `plan/` for coding runs
@@ -79,7 +81,7 @@ Use multiple implementers only when:
 
 - writable surfaces are independent
 - outputs can merge without negotiation
-- the parent can land accepted changes into the primary workspace without ambiguity
+- each worker has a disjoint file scope or a parent-created Git worktree, and the parent can validate the shared result without ambiguity
 - final acceptance can still be handled by one read-only reviewer or validator
 
 ## Adaptive Review Rules
@@ -96,20 +98,9 @@ Do not add a reviewer after every writer.
 
 Suppress redundant final reviewers and validators when one acceptance pass is enough.
 
-## Model And Reasoning Rules
+## Runtime Control Rules
 
-Choose model and reasoning only after the plan exists.
-
-Base the choice on:
-
-- ambiguity
-- failure cost
-- writable scope
-- dependency depth
-- verification burden
-- review burden
-
-Choose from the internal agent capabilities available in the active session. Do not rely on repository-local hardcoded model catalogs or fallback priority lists.
+Choose the worker mission, task name, context fork, writable scope, target worktree, and schedule only after the plan exists. The current `spawn_agent` schema exposes `task_name`, `message`, and optional `fork_turns`; it does not expose per-worker model or reasoning controls. Discover current concurrency through `list_agents` and runtime scheduling rather than a hardcoded team limit.
 
 ## Imported Skill Selection Rules
 
@@ -152,7 +143,7 @@ Each status update should say:
 Accept only when:
 
 - requested deliverables are present
-- accepted writable worker outputs have been landed in the primary workspace
+- writable worker outputs already present in the designated shared worktree have been inspected and accepted
 - promised checks have passed
 - promised reviewer or validator verdicts have been captured
 - evidence files are updated

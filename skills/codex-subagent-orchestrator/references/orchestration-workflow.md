@@ -2,6 +2,8 @@
 
 This workflow treats `/sub` as an internal supervision mode, not as an external launcher.
 
+Read `collaboration-runtime-contract.md` before using collaboration tools. It is the canonical local source for callable names, context-fork semantics, shared-filesystem behavior, and lifecycle rules.
+
 Use `skills/agent-skills-integration/agent-skill-routing.md` whenever a worker or stage needs vendored execution-discipline skills from `vendor/agent-skills/`.
 
 If the runtime cannot provide the required internal agent tools, do not invent worker launches. Fall back to a parent-only reasoning path under `skills/codex-parent-session-orchestrator/SKILL.md`, keep the same plan-first contract, and preserve `/sub`-style evidence on disk so the degradation is explicit and reviewable.
@@ -18,7 +20,7 @@ Use one of these two orders:
 2. scan the repository enough to understand the boundary
 3. produce the short understanding report required by `skills/plan-mode-default/SKILL.md` and `skills/plan-mode-default/references/coding-plan-prompt-en.md`
 4. wait for explicit user approval to proceed with coding
-5. write or update the approved full PLAN under repo-root `plan/` in the primary workspace
+5. write or update the approved full PLAN under repo-root `plan/` in the designated shared worktree
 6. finalize whether delegation is justified
 7. finalize worker count, execution mode, and worker roles
 8. write the orchestration plan on disk
@@ -51,18 +53,18 @@ The parent owns:
 - task decomposition
 - worker count
 - execution mode: serial | parallel | mixed
-- model selection
-- reasoning selection
+- target worktree selection
+- context fork depth
 - review timing
 - approved writable boundaries
 - acceptance criteria
 - final acceptance
-- integrating accepted writable worker outputs into the primary workspace
+- inspecting and validating writable worker outputs already present in the designated shared worktree
 - selecting the minimum imported vendor skills each stage or worker actually needs
 - ensuring that coding stages and coding workers inherit `skills/karpathy-guidelines/SKILL.md` as the default local anti-overengineering overlay
 - ensuring that planner-like workers on coding runs inherit `skills/plan-mode-default/SKILL.md` and `skills/plan-mode-default/references/coding-plan-prompt-en.md` as the default planning contract unless the user explicitly overrides it
 - ensuring that coding `/sub` runs do not launch writable workers before the understanding-report approval gate is satisfied
-- for coding runs, writing or updating the approved full PLAN under repo-root `plan/` in the primary workspace before writable worker launch
+- for coding runs, writing or updating the approved full PLAN under repo-root `plan/` in the designated shared worktree before writable worker launch
 - for coding runs, keeping the active approved plan file updated with typed progress, completion state, blockers, next step, and version links as the run advances
 - for coding runs, keeping the active plan file's `Scoreboard` section current and treating it as the authoritative score-history ledger for the run
 - for coding runs, recording explicit user scores as authoritative and otherwise maintaining a conservative provisional score without blocking for feedback or using a fixed hardcoded fallback number, while keeping that provisional score at `50` or below
@@ -73,15 +75,15 @@ The parent should not satisfy requested deliverable edits directly when a bounde
 
 ## Worker Responsibilities
 
-Each worker owns one bounded job in its own forked workspace:
+Each worker owns one bounded job in the shared filesystem:
 
 - one clear mission
 - one writable surface
 - one validation contract
 - one stop condition
 
-Workers should not infer broader scope, edit unrelated files, or silently change the team plan.
-For write tasks, their result is a proposed change set until the parent lands the accepted change in the primary workspace.
+Workers should not infer broader scope, edit unrelated files, or silently change the team plan. Simultaneous writers must own disjoint files, and branch-isolated work requires a parent-created Git worktree with an explicit path.
+For write tasks, their result is visible immediately in the designated shared worktree. The parent accepts it only after inspecting the diff and rerunning the planned validation.
 For planning tasks on coding runs, workers should read `skills/plan-mode-default/SKILL.md` and `skills/plan-mode-default/references/coding-plan-prompt-en.md` first by default when those files exist and should follow that contract unless the user explicitly overrides it.
 For coding tasks, no writable worker should launch until that contract has already produced the understanding report and the user has explicitly approved proceeding.
 
@@ -95,13 +97,13 @@ Expand to multiple implementers only when all of the following are true:
 - writable surfaces do not overlap
 - outputs do not depend on each other in order-sensitive ways
 - interface or contract merge risk is low enough to describe deterministically
-- the parent can integrate the accepted branch outputs into the primary workspace without ambiguity
-- one final read-only reviewer or validator can judge the merged result after integration
+- each worker can use a disjoint file scope or an explicitly assigned Git worktree
+- one final read-only reviewer or validator can judge the shared final result after the last writer
 
 Keep one implementer when any of the following is true:
 
 - files overlap or are nested
-- one change depends on another change landing first
+- one change depends on another change finishing first
 - one shared contract, config, or interface could be touched from multiple directions
 - reconciliation would be harder than one bounded writer
 
@@ -111,7 +113,7 @@ Use serial stages when:
 
 - later work consumes earlier output
 - a reviewer must gate a risky transition
-- the parent must integrate one worker's accepted output before another worker can proceed safely
+- the parent must inspect or validate one worker's output before another worker can proceed safely
 - the task includes sequential proof obligations
 - the writable surface is coupled
 
@@ -127,22 +129,16 @@ Use `mixed` execution mode when:
 - one or more stages contain parallel workers
 - reporting only `serial` or only `parallel` would hide important coordination behavior
 
-## Model And Reasoning Selection
+## Runtime Controls
 
-Choose model and reasoning only after the plan exists.
+Use only controls exposed by the current collaboration schema.
 
-Evaluate:
+- `spawn_agent` accepts `task_name`, `message`, and optional `fork_turns`
+- `fork_turns` copies conversation context and does not isolate files
+- the current schema does not expose per-worker model or reasoning controls
+- current concurrency is runtime-provided and should be inspected through `list_agents` rather than hardcoded
 
-- task ambiguity
-- failure cost
-- writable scope size
-- dependency depth
-- verification burden
-- review burden
-
-Use the lightest model and reasoning that can still execute the bounded task safely.
-
-Do not hardcode model slug preference tables into repository instructions. Choose from the internal agent capabilities currently available in the active session. If the session cannot expose distinct choices clearly, report that limitation instead of pretending the choice was dynamic.
+Choose the context fork, worker mission, writable scope, worktree path, and scheduling order after the plan exists. See `collaboration-runtime-contract.md` for the complete callable surface.
 
 ## Imported Skill Selection
 
@@ -189,7 +185,7 @@ Before launch, the parent must report:
 - approval status and reason
 - worker count
 - execution mode: serial | parallel | mixed
-- each worker id, role, mission, writable scope, model, reasoning effort, and stage
+- each worker id, role, mission, target worktree, writable scope, context fork, and stage
 - review timing or review policy
 - acceptance strategy
 - approved plan file path in `plan/` for coding runs
@@ -227,7 +223,7 @@ Handle these explicitly:
 - if multiple safe plans remain after least-change reasoning, pause and ask instead of inventing user intent
 - multiple deliverables do not automatically justify multiple implementers; keep one implementer when writable paths overlap, are nested, or depend on shared contracts
 - if parallel workers could touch the same interface, config, or merge boundary, force serial execution or insert a reconciliation review stage
-- if the active session cannot truly distinguish model or reasoning choices across workers, say so in the pre-launch report instead of pretending the choice was dynamic
+- do not report worker-specific model or reasoning choices when the collaboration schema does not expose them
 - if a workspace path, deliverable path, or target branch is corrected mid-run, rerun final review or validation on the corrected final artifact before acceptance
 - if a reviewer finding exceeds the approved fix scope, re-plan or re-approve instead of silently widening the fixer
 - final acceptance comes from verified artifacts and reviewer or validator verdicts, not from a worker merely finishing without error
@@ -252,8 +248,8 @@ If review finds a material issue:
 1. decide whether the issue fits a bounded fix scope
 2. if yes, write the required fixer scope into `review-verdict.md` and the active approved fix scope into `status.md`
 3. launch one bounded fixer
-4. land the accepted repair in the primary workspace if the fixer worked in a fork
-5. rerun review or validation on the repaired artifact in the primary workspace
+4. inspect the repair already present in the designated shared worktree
+5. rerun review or validation on the repaired shared artifact
 
 Re-plan or re-approve instead of widening the repair when:
 
