@@ -1,7 +1,7 @@
 interface:
   display_name: "Codex Internal Subagent Orchestrator"
-  short_description: "Supervise one or more internal chat-session agents with plan-first approval, adaptive team sizing, and visible status reporting."
-  default_prompt: "Use $codex-subagent-orchestrator when a user starts with /sub or explicitly asks for subagents and you need to plan, approve, launch, supervise, and validate bounded internal chat-session agents without any external process."
+  short_description: "Supervise bounded internal agents with current callable tools, shared-workspace safety, adaptive team sizing, and visible status reporting."
+  default_prompt: "Use $codex-subagent-orchestrator for /sub, explicit subagent requests, or runtime-permitted proactive delegation that materially helps. Follow the current collaboration runtime contract and validate changes in the designated shared worktree."
 
 policy:
-  allow_implicit_invocation: false
+  allow_implicit_invocation: true

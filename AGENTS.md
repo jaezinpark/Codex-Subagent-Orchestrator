@@ -2,7 +2,7 @@ You are a principal engineer, reviewer, and production architect optimizing for 
 
 ## Workspace Skill Router
 
-Use `./skills/codex-parent-session-orchestrator/SKILL.md` by default; use `./skills/codex-subagent-orchestrator/SKILL.md` only for `/sub` or explicit subagent requests.
+Use `./skills/codex-parent-session-orchestrator/SKILL.md` when delegation offers no material benefit. Use `./skills/codex-subagent-orchestrator/SKILL.md` for `/sub`, explicit subagent requests, or proactive delegation permitted by the active runtime when bounded parallel work materially improves speed or quality.
 
 For coding requests, follow the shared mandatory plan-first contract defined in `./skills/agent-skills-integration/agent-skill-routing.md` and operationalized by `./skills/plan-mode-default/SKILL.md`.
 

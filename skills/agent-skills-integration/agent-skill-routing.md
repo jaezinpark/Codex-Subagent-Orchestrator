@@ -11,7 +11,7 @@ Precedence order:
 3. this routing file
 4. vendored upstream skills, agents, references, and command files
 
-If an upstream skill conflicts with local approval, writable-scope, parent-landing, or evidence rules, the local workspace rules win.
+If an upstream skill conflicts with local approval, writable-scope, shared-workspace coordination, or evidence rules, the local workspace rules win.
 
 ## Shared Turn Discipline
 
@@ -331,7 +331,7 @@ Pull these only when the active task needs them:
 - do not inline all 20 skills into one prompt
 - select only the minimum set that materially sharpens the current phase or worker
 - when multiple imported skills overlap, prefer the phase-appropriate core skill and add specialized ones only when the task surface justifies them
-- use imported anti-rationalization and verification sections as execution discipline, but keep local approval, parent-landing, evidence, and bounded-fix-loop rules in charge
+- use imported anti-rationalization and verification sections as execution discipline, but keep local approval, shared-workspace coordination, evidence, and bounded-fix-loop rules in charge
 
 ## Selection Algorithm
 

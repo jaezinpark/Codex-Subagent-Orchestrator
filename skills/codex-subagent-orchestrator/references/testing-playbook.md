@@ -13,6 +13,18 @@ Before runtime tests, verify the imported vendor pack is intact:
 - `vendor/agent-skills/references/` contains all 4 upstream checklists
 - `skills/agent-skills-integration/agent-skill-routing.md` references every imported skill at least once
 
+### Runtime callable contract
+
+Verify `references/collaboration-runtime-contract.md` before behavioral tests:
+
+- all six current collaboration tools are documented
+- collaboration tools are called directly rather than through `functions.exec`
+- `fork_turns` is described as conversation context only
+- all agents are described as sharing the same cwd and filesystem
+- simultaneous writers require disjoint files or explicit Git worktrees
+- no worker-specific model or reasoning argument is promised
+- no close operation or fixed universal concurrency limit is invented
+
 ### 0. Hard plan-first gate
 
 Prove that every new coding request, and any later coding request that is not already covered by the active approved plan record, triggers the understanding report and explicit approval gate before implementation, even when the request is tiny, urgent, or explicitly says to code immediately.
@@ -45,14 +57,14 @@ Check:
 
 ### 2. Parallel independent implementers
 
-Prove that two independent writable scopes can run in parallel and still converge cleanly through parent integration.
+Prove that two independent writable scopes can run in parallel in the shared filesystem without collisions.
 
 Check:
 
 - two implementers launched in the same stage
 - writable scopes are disjoint
-- the parent lands the accepted changes into the primary workspace
-- one late reviewer or validator accepts the merged result in the primary workspace
+- the parent inspects the changes already present in the designated shared worktree
+- one late reviewer or validator accepts the shared final result after the last writer
 - status reporting names both active workers while they run
 
 ### 3. Shared-state serialization
@@ -95,7 +107,7 @@ Check:
 
 - worker count reported
 - execution mode reported as `serial`, `parallel`, or `mixed`
-- per-worker model and reasoning reported
+- per-worker target worktree, writable scope, and context fork reported
 - review timing reported
 - launch is skipped until the understanding-report approval gate is satisfied
 - the pre-launch evidence names the current score state for coding runs
@@ -141,7 +153,7 @@ Also audit for integration regressions:
 - imported vendor skills exist on disk
 - parent and `/sub` docs both reference `skills/agent-skills-integration/agent-skill-routing.md`
 - that routing file is the only canonical imported-skill mapping and local orchestrator docs do not maintain divergent default tables
-- the local orchestrators still keep approval, evidence, and parent-landing authority instead of outsourcing those concerns to upstream skill prose
+- the local orchestrators still keep approval, evidence, and shared-workspace coordination authority instead of outsourcing those concerns to upstream skill prose
 - worker briefs and parent phases still force imported-skill selection to stay minimal and justified instead of loading the full vendor pack by habit
 
 ## Minimum-Set Discipline Checks
@@ -161,6 +173,6 @@ Use internal agents to validate the workflow itself:
 
 - one explorer to audit for leftover external-process guidance
 - one explorer to audit whether approval, visibility, adaptive sizing, and reviewer throttling are all still specified
-- one or more worker agents to produce bounded change proposals in forks, followed by parent landing and final review in the primary workspace
+- one or more worker agents to produce bounded changes in disjoint shared paths or explicit Git worktrees, followed by parent diff inspection and final review of the shared result
 
 Preserve the audit notes under `subagent-runs/<test-run-id>/`.
