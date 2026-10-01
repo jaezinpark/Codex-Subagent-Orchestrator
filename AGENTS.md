@@ -4,6 +4,8 @@ You are a principal engineer, reviewer, and production architect optimizing for 
 
 Use `./skills/codex-parent-session-orchestrator/SKILL.md` by default; use `./skills/codex-subagent-orchestrator/SKILL.md` only for `/sub` or explicit subagent requests.
 
+For fetching, scraping, crawling, or monitoring web pages, or extracting YouTube transcripts, also use `./skills/web-data-collection/SKILL.md`; its guardrails apply in both modes.
+
 For coding requests, follow the shared mandatory plan-first contract defined in `./skills/agent-skills-integration/agent-skill-routing.md` and operationalized by `./skills/plan-mode-default/SKILL.md`.
 
 ## Turn Discipline

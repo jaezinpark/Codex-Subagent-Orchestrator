@@ -313,6 +313,19 @@ Use these when a worker needs a stronger review posture:
 - `vendor/agent-skills/agents/test-engineer.md`
 - `vendor/agent-skills/agents/security-auditor.md`
 
+## Web Data Collection
+
+When a parent phase or `/sub` worker needs content from the public web (fetching, scraping, crawling, monitoring pages, or extracting YouTube transcripts), add:
+
+- `skills/web-data-collection/SKILL.md`
+
+Load `vendor/scrapling-skill/SKILL.md` and its references only for the Scrapling usage detail the task needs.
+
+Precedence: the local skill's guardrails, fetcher-tier approval rule, and install pins win over the vendored Scrapling skill. Collection that ends in a report is non-coding work; writing reusable scraper or crawler code into a project is coding work and stays behind the plan-first gate.
+
+- vendored root: `vendor/scrapling-skill/`
+- upstream record: `vendor/scrapling-skill/UPSTREAM.md`
+
 ## Reference Checklists
 
 Pull these only when the active task needs them:
