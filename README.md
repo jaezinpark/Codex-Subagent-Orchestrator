@@ -90,6 +90,7 @@
 - 문제를 찾았을 때 전부 다시 하기보다 필요한 범위만 고치고 다시 확인하기
 - 계획, 상태, 결과, 승인 기록을 파일로 남기기
 - Agent Skills를 작업에 맞게 골라 쓰기
+- 공개 웹 데이터와 YouTube 자막을 가드레일 안에서 수집하기
 
 ### 저장소 구조
 
@@ -114,11 +115,15 @@
 |   |   `-- references/
 |   |-- karpathy-guidelines/
 |   |   `-- SKILL.md
-|   `-- plan-mode-default/
+|   |-- plan-mode-default/
+|   |   |-- SKILL.md
+|   |   `-- references/
+|   `-- web-data-collection/
 |       |-- SKILL.md
-|       `-- references/
+|       `-- scripts/
 `-- vendor/
-    `-- agent-skills/
+    |-- agent-skills/
+    `-- scrapling-skill/
 ```
 
 ### 먼저 읽을 문서
@@ -152,6 +157,11 @@
 Agent Skills 연결 규칙:
 
 - `skills/agent-skills-integration/agent-skill-routing.md`
+
+웹 데이터·YouTube 자막 수집:
+
+- `skills/web-data-collection/SKILL.md`
+- `vendor/scrapling-skill/SKILL.md`
 
 ### 핵심 원칙
 
@@ -261,6 +271,7 @@ For coding work, the local default overlay is `skills/karpathy-guidelines/SKILL.
 - running bounded fix-and-recheck loops instead of broad reruns
 - keeping plan, status, results, and acceptance notes on disk
 - selecting Agent Skills dynamically based on the task
+- collecting public web data and YouTube transcripts under explicit guardrails
 
 ### Repository layout
 
@@ -285,11 +296,15 @@ For coding work, the local default overlay is `skills/karpathy-guidelines/SKILL.
 |   |   `-- references/
 |   |-- karpathy-guidelines/
 |   |   `-- SKILL.md
-|   `-- plan-mode-default/
+|   |-- plan-mode-default/
+|   |   |-- SKILL.md
+|   |   `-- references/
+|   `-- web-data-collection/
 |       |-- SKILL.md
-|       `-- references/
+|       `-- scripts/
 `-- vendor/
-    `-- agent-skills/
+    |-- agent-skills/
+    `-- scrapling-skill/
 ```
 
 ### Read this first
@@ -323,6 +338,11 @@ For `/sub`:
 For Agent Skills routing:
 
 - `skills/agent-skills-integration/agent-skill-routing.md`
+
+For web data and YouTube transcript collection:
+
+- `skills/web-data-collection/SKILL.md`
+- `vendor/scrapling-skill/SKILL.md`
 
 ### Core rules
 
