@@ -50,11 +50,11 @@ Install into a project virtual environment, never globally:
 
 ```bash
 python3 -m venv .venv
-.venv/bin/pip install "scrapling[fetchers]==0.4.15"
+.venv/bin/pip install "scrapling[fetchers,rag]==0.4.15"
 .venv/bin/scrapling install   # only needed for browser fetchers (steps 3-4)
 ```
 
-The vendored skill pins `>=0.4.15`. This workspace pins the exact version the vendored reference was written against; upgrade both together.
+The `rag` extra provides the Markdown converter; without it, `.md` output fails and leaves an empty file. The vendored skill pins `>=0.4.15`. This workspace pins the exact version the vendored reference was written against; upgrade both together.
 
 CLI rules:
 
@@ -106,12 +106,16 @@ Fetch subtitles only, never the video:
 ```bash
 .venv/bin/yt-dlp --js-runtimes node \
   --skip-download --no-playlist \
-  --write-subs --write-auto-subs --sub-langs "ko,en" --sub-format vtt \
+  --write-subs --write-auto-subs --sub-langs "ko" --sub-format vtt \
   --sleep-subtitles 1 \
   -o "out/%(id)s.%(ext)s" "https://www.youtube.com/watch?v=VIDEO_ID"
 ```
 
-This writes files like `out/VIDEO_ID.ko.vtt`. Manual subtitles are preferred automatically when both exist. Adjust `--sub-langs` to the video's language; `--list-subs` shows what is available.
+This writes files like `out/VIDEO_ID.ko.vtt`. Manual subtitles are preferred automatically when both exist.
+
+Request only the video's original language. Find it with `yt-dlp --skip-download --print "%(language)s" URL`; when that prints `NA`, run `--list-subs` and pick the track marked `(Original)`. Other languages on an auto-captioned video are machine translations that YouTube rate-limits with `HTTP Error 429`, and one failed language makes yt-dlp exit non-zero even when the original-language file was written. Fetch a translated track only when the task needs it, in a separate run.
+
+Treat the exit status as a hint, not the result: list the `.vtt` files actually written, and record every requested language that is missing in the failure manifest (section 5).
 
 Convert the WebVTT file into clean text. Auto-generated captions repeat each line across rolling cues, and the helper removes the repeats:
 
